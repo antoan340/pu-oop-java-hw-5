@@ -8,7 +8,7 @@ public class ScreenTile {
      * @author Antoan
      * @param "Създавам си цвят"
      */
-    public static final int TILE_SIZE = 50;
+    public static final int TILE_SIZE = 10;
 
     private float row;
     private float col;
@@ -23,7 +23,8 @@ public class ScreenTile {
 
         this.row        = row;
         this.col        = col;
-        this.tileSize   = 10;
+        this.tileSize   = 10
+        ;
     }
     /**
      *
@@ -42,19 +43,6 @@ public class ScreenTile {
      */
     public void RenderBorders(Graphics g){
         g.setColor(Color.black);
-        for (int i=31; i<=671 ;i+=10){
-            for(int j=8;j<=648;j+=10){
-                if(i<=661&&j<=638) {
-                    g.fillRect(j, i, 1, 10);
-                    g.fillRect(j, i, 10, 1);
-                }  if(i==671&&j<648){
-                    g.fillRect(j, i, 10, 1);
-                }
-                if(i<671&&j==648){
-                    g.fillRect(j, i, 1, 10);
-                }
-
-            }
+        g.fillRect(8, 31, 640, 640);
         }
     }
-}
