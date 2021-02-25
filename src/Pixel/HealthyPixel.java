@@ -6,7 +6,7 @@ import java.awt.*;
 
 
         /**
-         * @param "Задаване на параметри на непроходимите местности"
+         * @param "Задаване на параметри на пикселите"
          * @author Antoan
          */
         public HealthyPixel(int row, int col, Color color) {
@@ -18,7 +18,7 @@ import java.awt.*;
         }
 
         /**
-         * @param "Визуализиране на непроходимите местности"
+         * @param "Визуализиране на пикселите"
          * @author Antoan
          */
         public void render(Graphics g) {

@@ -6,7 +6,7 @@ public class DeadPixel extends Figure {
     public Color color;
 
     /**
-     * @param "Задаване на параметри на непроходимите местности"
+     * @param "Задаване на параметри на пикселите"
      * @author Antoan
      */
     public DeadPixel(int row, int col, Color color) {
@@ -18,7 +18,7 @@ public class DeadPixel extends Figure {
     }
 
     /**
-     * @param "Визуализиране на непроходимите местности"
+     * @param "Визуализиране на пикселите"
      * @author Antoan
      */
     public void render(Graphics g) {

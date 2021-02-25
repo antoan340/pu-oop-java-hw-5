@@ -1,13 +1,8 @@
 package Screen;
-
-
-
 import Pixel.ArrayList;
 import Pixel.DeadPixel;
 import Pixel.HealthyPixel;
 import Pixel.NearDeathPixel;
-import com.sun.tools.javac.Main;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -30,15 +25,16 @@ import java.util.concurrent.ThreadLocalRandom;
         private NearDeathPixel[][] nPixel;
         private DeadPixel[][] dPixel;
         int spawnCounter =4096;
-        int colorOption,deadPixelCount=0;
+        int colorOption,deadPixelCount=0,checkCount=0;
         double pixelOption;
         int lifeCount=3;
         Color pixelColor;
         private static final ArrayList<String> healthyCollection = new ArrayList<>();
         private static final ArrayList<String> deathCollection = new ArrayList<>();
         private static int phonesChecked=0;
+
         /**
-         * @param "Инициализацията на игралното поле заедно със всички тайлове"
+         * @param Основата на телефона
          * @author Antoan
          */
         public ScreenSummon() {
@@ -60,6 +56,10 @@ import java.util.concurrent.ThreadLocalRandom;
             this.addMouseListener(this);
 
         }
+        /**
+         * @param Даване на възможност да се проверят няколко различни телефона един след друг
+         * @author Antoan
+         */
         public static void onExit(int deadPixels,String title) {
 
             if(deadPixels>2048){
@@ -80,36 +80,20 @@ import java.util.concurrent.ThreadLocalRandom;
                 deathCollection.display();
             }
         }
+        /**
+         * @param Създаването на всички пиксели на случаен принцип
+         * @author Antoan
+         */
         public  void summonPixel(int row, int col){
             do {
-                colorOption = ThreadLocalRandom.current().nextInt(0, 3);
-                pixelOption = ThreadLocalRandom.current().nextDouble(0, 11);
-                switch (colorOption) {
-                    case 1 -> pixelColor = Color.BLUE;
-                    case 2 -> pixelColor = Color.RED;
-                    default -> pixelColor = Color.GREEN;
-                }
-                if(row<63)
-                    row++;
-                else {
-                    row=0;
-                    if(col<63)
-                        col++;
-                    else col=-1;
-                }
-                if(pixelOption>=0 && pixelOption<2) {
-                    this.dPixel[row][col] = (new DeadPixel(row, col, pixelColor));
-                    deadPixelCount++;
-                }
-                if(pixelOption>=2 && pixelOption<=5.5) {
-                    this.nPixel[row][col] = (new NearDeathPixel(row, col, pixelColor));
-                    deadPixelCount++;
-                }
-                if(pixelOption> 5.5 && pixelOption<=11)
-                    this.hPixel[row][col]= (new HealthyPixel(row,col,pixelColor));
+                spawn (row, col);
                 spawnCounter--;
             }while (spawnCounter>0);
         }
+        /**
+         * @param Генерирането на случаен сериен код за всеки телефон
+         * @author Antoan
+         */
         public static String randomСerialНumber(int count) {
             StringBuilder builder = new StringBuilder();
             while (count-- != 0) {
@@ -120,15 +104,42 @@ import java.util.concurrent.ThreadLocalRandom;
             return builder.toString();
         }
         /**
-         * @param "Инициализацията на играча"
+         * @param Намаляване на големината на метода summonPixel
          * @author Antoan
          */
+        public void spawn (int row, int col){
+            colorOption = ThreadLocalRandom.current().nextInt(0, 3);
+            pixelOption = ThreadLocalRandom.current().nextDouble(0, 11);
+            switch (colorOption) {
+                case 1 -> pixelColor = Color.BLUE;
+                case 2 -> pixelColor = Color.RED;
+                default -> pixelColor = Color.GREEN;
+            }
+            if(row<63)
+                row++;
+            else {
+                row=0;
+                if(col<63)
+                    col++;
+                else col=-1;
+            }
+            if(pixelOption>=0 && pixelOption<2) {
+                this.dPixel[row][col] = (new DeadPixel(row, col, pixelColor));
+                deadPixelCount++;
+            }
+            if(pixelOption>=2 && pixelOption<=5.5) {
+                this.nPixel[row][col] = (new NearDeathPixel(row, col, pixelColor));
+                deadPixelCount++;
+            }
+            if(pixelOption> 5.5 && pixelOption<=11)
+                this.hPixel[row][col]= (new HealthyPixel(row,col,pixelColor));
+        }
+
 
         /**
-         * @param "Инициализирането на случаен принцип на къщите на Баба яга и на непроходимите места"
+         * @param Маус клик евента в който е направен проверяването на качеството на пикселите
          * @author Antoan
          */
-
         @Override
         public void mouseClicked(MouseEvent e) {
             int row = this.getBoardDimentionBasedOnCoordinates(e.getY());
@@ -140,17 +151,22 @@ import java.util.concurrent.ThreadLocalRandom;
                 if (lifeCount == 0) {
                     nPixel[row][col].color = Color.BLACK;
                     lifeCount=3;
+                    checkCount++;
                 }
             }
             if(hasDeadPixel(row,col)&&dPixel[row][col].color!=Color.BLACK){
                 dPixel[row][col].color=Color.BLACK;
                 lifeCount=3;
+                checkCount++;
             }
             repaint();
-
-        }
-        public void checkDeadCount(){
-
+            if (hasHealthyPixel(row,col))
+                checkCount++;
+            if (checkCount==4096){
+                if(deadPixelCount>2048)
+                Modal.render(this, "Внимание", "Телефона и успешно проверен: Неработещ екран");
+                else  Modal.render(this, "Внимание", "Телефона и успешно проверен: Работещ екран");
+            }
         }
 
         @Override
@@ -168,32 +184,58 @@ import java.util.concurrent.ThreadLocalRandom;
             }
 
         }
-
+        /**
+         * @param Взимането на пиксел от даденната група
+         * @author Antoan
+         */
 
         private DeadPixel getDeadPixel(int row, int col) {
             return this.dPixel[row][col];
 
         }
-
+        /**
+         * @param Проверяване дали на тази позиция има пиксел от дадената група
+         * @author Antoan
+         */
         private boolean hasDeadPixel(int row, int col) {
             return this.getDeadPixel(row, col) != null;
         }
+        /**
+         * @param Взимането на пиксел от даденната група
+         * @author Antoan
+         */
+
         private HealthyPixel getHealthyPixel(int row, int col) {
             return this.hPixel[row][col];
 
         }
-
+        /**
+         * @param Проверяване дали на тази позиция има пиксел от дадената група
+         * @author Antoan
+         */
         private boolean hasHealthyPixel(int row, int col) {
             return this.getHealthyPixel(row, col) != null;
         }
+        /**
+         * @param Взимането на пиксел от даденната група
+         * @author Antoan
+         */
+
         private NearDeathPixel getNearDeathPixel(int row, int col) {
             return this.nPixel[row][col];
 
         }
-
+        /**
+         * @param Проверяване дали на тази позиция има пиксел от дадената група
+         * @author Antoan
+         */
         private boolean hasNearDeathPixel(int row, int col) {
             return this.getNearDeathPixel(row, col) != null;
         }
+        /**
+         * @param Рендърването на всеки вид пиксел
+         * @author Antoan
+         */
         private void renderScreenPiece(Graphics g, int row, int col) {
             if (this.hasDeadPixel(row, col)) {
                 DeadPixel p = (DeadPixel) this.getDeadPixel(row, col);
