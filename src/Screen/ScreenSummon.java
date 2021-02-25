@@ -2,14 +2,18 @@ package Screen;
 
 
 
+import Pixel.ArrayList;
 import Pixel.DeadPixel;
 import Pixel.HealthyPixel;
 import Pixel.NearDeathPixel;
+import com.sun.tools.javac.Main;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -26,8 +30,13 @@ import java.util.concurrent.ThreadLocalRandom;
         private NearDeathPixel[][] nPixel;
         private DeadPixel[][] dPixel;
         int spawnCounter =4096;
-        int colorOption,pixelOption;
+        int colorOption,deadPixelCount=0;
+        double pixelOption;
+        int lifeCount=3;
         Color pixelColor;
+        private static final ArrayList<String> healthyCollection = new ArrayList<>();
+        private static final ArrayList<String> deathCollection = new ArrayList<>();
+        private static int phonesChecked=0;
         /**
          * @param "Инициализацията на игралното поле заедно със всички тайлове"
          * @author Antoan
@@ -38,16 +47,43 @@ import java.util.concurrent.ThreadLocalRandom;
             this.nPixel = new NearDeathPixel[TILE_SIDE_COUNT][TILE_SIDE_COUNT];
             this.hPixel = new HealthyPixel[TILE_SIDE_COUNT][TILE_SIDE_COUNT];
             summonPixel(row,col);
-            setTitle(randomСerialНumber(10));
+            String number = randomСerialНumber(10);
+            this.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent evt) {
+                 onExit(deadPixelCount,number);
+                }
+            });
+            setTitle(number);
             this.setSize(700, 700);
-            this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             this.setVisible(true);
             this.addMouseListener(this);
+
+        }
+        public static void onExit(int deadPixels,String title) {
+
+            if(deadPixels>2048){
+                deathCollection.add(title);
+            } else if(deadPixels >= 0) {
+                healthyCollection.add(title);
+            }
+            if(phonesChecked <4){
+                phonesChecked++;
+                ScreenSummon screenSummon = new ScreenSummon();
+            } else{
+                System.out.println("Good phone collection");
+                System.out.println(" ");
+                healthyCollection.display();
+                System.out.println(" ");
+                System.out.println("Bad phones collection");
+                System.out.println(" ");
+                deathCollection.display();
+            }
         }
         public  void summonPixel(int row, int col){
             do {
                 colorOption = ThreadLocalRandom.current().nextInt(0, 3);
-                pixelOption = ThreadLocalRandom.current().nextInt(0, 3);
+                pixelOption = ThreadLocalRandom.current().nextDouble(0, 11);
                 switch (colorOption) {
                     case 1 -> pixelColor = Color.BLUE;
                     case 2 -> pixelColor = Color.RED;
@@ -61,11 +97,16 @@ import java.util.concurrent.ThreadLocalRandom;
                         col++;
                     else col=-1;
                 }
-                switch (colorOption) {
-                    case 1 -> this.dPixel[row][col]= (new DeadPixel(row,col,pixelColor));
-                    case 2 -> this.hPixel[row][col]= (new HealthyPixel(row,col,pixelColor));
-                    default -> this.nPixel[row][col]= (new NearDeathPixel(row,col,pixelColor));
+                if(pixelOption>=0 && pixelOption<2) {
+                    this.dPixel[row][col] = (new DeadPixel(row, col, pixelColor));
+                    deadPixelCount++;
                 }
+                if(pixelOption>=2 && pixelOption<=5.5) {
+                    this.nPixel[row][col] = (new NearDeathPixel(row, col, pixelColor));
+                    deadPixelCount++;
+                }
+                if(pixelOption> 5.5 && pixelOption<=11)
+                    this.hPixel[row][col]= (new HealthyPixel(row,col,pixelColor));
                 spawnCounter--;
             }while (spawnCounter>0);
         }
@@ -76,7 +117,6 @@ import java.util.concurrent.ThreadLocalRandom;
                 builder.append(ALPHA_NUMERIC_STRING.charAt(character));
 
             }
-            System.out.println(builder);
             return builder.toString();
         }
         /**
@@ -93,10 +133,25 @@ import java.util.concurrent.ThreadLocalRandom;
         public void mouseClicked(MouseEvent e) {
             int row = this.getBoardDimentionBasedOnCoordinates(e.getY());
             int col = this.getBoardDimentionBasedOnCoordinates(e.getX());
-            row--;
+            row-=3;
+            col-=1;
+            if(hasNearDeathPixel(row,col)&&nPixel[row][col].color!=Color.BLACK) {
+                lifeCount--;
+                if (lifeCount == 0) {
+                    nPixel[row][col].color = Color.BLACK;
+                    lifeCount=3;
+                }
+            }
+            if(hasDeadPixel(row,col)&&dPixel[row][col].color!=Color.BLACK){
+                dPixel[row][col].color=Color.BLACK;
+                lifeCount=3;
+            }
+            repaint();
 
         }
+        public void checkDeadCount(){
 
+        }
 
         @Override
 
